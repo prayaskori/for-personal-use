@@ -3991,21 +3991,29 @@
       const audioDest = musicCtx.createMediaStreamDestination();
       combinedStream.addTrack(audioDest.stream.getAudioTracks()[0]);
 
-      // -- REAL IKTARA AUDIO (starts at 1:10) --
+      // -- PERFECT AUDIO via fetch + decodeAudioData for reliable capture --
       let collageMusicStopped = false;
-      const collageSongEl = new Audio("perfect_mp3.mp3");
-      collageSongEl.currentTime = 50;
-      collageSongEl.addEventListener('loadedmetadata', () => {
-        collageSongEl.currentTime = 50;
-      });
-      collageSongEl.volume = 1.0;
-      const collageSrcNode = musicCtx.createMediaElementSource(collageSongEl);
-      collageSrcNode.connect(audioDest);
-      collageSongEl.play().catch(e => console.warn('Collage audio:', e));
+      let collageAudioSource = null;
+
+      if (musicCtx.state === 'suspended') await musicCtx.resume();
+
+      fetch("perfect_mp3.mp3")
+        .then(r => r.arrayBuffer())
+        .then(buf => musicCtx.decodeAudioData(buf))
+        .then(decoded => {
+          if (collageMusicStopped) return;
+          collageAudioSource = musicCtx.createBufferSource();
+          collageAudioSource.buffer = decoded;
+          collageAudioSource.connect(audioDest);
+          collageAudioSource.connect(musicCtx.destination);
+          collageAudioSource.start(0, 50);
+        })
+        .catch(e => console.warn('Collage audio fetch error:', e));
+
       const _origStop = stopCollageGeneration;
       stopCollageGeneration = function () {
         collageMusicStopped = true;
-        collageSongEl.pause();
+        if (collageAudioSource) { try { collageAudioSource.stop(); } catch(e) {} }
         _origStop();
       };
 

@@ -798,7 +798,14 @@
       cursor: pointer;
       margin: 0 auto 3.5rem;
       perspective: 1000px;
-      user-select: none
+      user-select: none;
+      transition: height 0.6s cubic-bezier(.25,1,.5,1), margin-bottom 0.6s ease;
+    }
+
+    .envelope-wrapper.open {
+      height: auto;
+      min-height: 220px;
+      padding-bottom: 2rem;
     }
 
     .envelope {
@@ -884,10 +891,11 @@
     }
 
     .letter-text {
-      font-size: .88rem;
+      font-size: .93rem;
       color: var(--text);
-      margin-bottom: .7rem;
-      line-height: 1.55
+      margin-bottom: 1rem;
+      line-height: 1.75;
+      white-space: pre-wrap;
     }
 
     .letter-signoff-l {
@@ -924,12 +932,19 @@
     }
 
     .envelope-wrapper.open .letter {
-      transform: translateY(-145px);
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: translateY(-60px);
       z-index: 3;
       height: auto;
       min-height: 300px;
       border: 1px solid var(--rose-lt);
-      box-shadow: 0 12px 35px rgba(61, 35, 40, .15)
+      box-shadow: 0 12px 35px rgba(61, 35, 40, .15);
+      width: min(540px, 92vw);
+      margin: 0 auto;
+      padding: 2rem 2.2rem;
+      text-align: left;
     }
 
     .envelope-wrapper.open .wax-seal {
@@ -2018,6 +2033,39 @@
               onchange="handleGiftUpload(3, this.files)">
           </div>
         </div>
+        <hr class="c-divider">
+        <p class="c-section-label">📸 Date Photos</p>
+        <div class="fg" style="margin-bottom:0.8rem;">
+          <label>Restaurant Photo</label>
+          <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;">
+            <div id="dp1-preview-container">
+              <img id="dp1-preview" src="" style="width:50px;height:50px;object-fit:cover;border-radius:6px;background:#eee;display:none;">
+              <div id="dp1-no-preview" style="width:50px;height:50px;border-radius:6px;background:#f5ead8;border:1px dashed var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🍽️</div>
+            </div>
+            <button type="button" class="gift-view-btn" style="margin-top:0;padding:0.35rem 0.8rem;font-size:0.75rem;" onclick="document.getElementById('dp1-file-input').click()">Upload Restaurant 📸</button>
+            <input type="file" id="dp1-file-input" style="display:none;" accept="image/*" onchange="handleDatePhotoUpload(1, this.files)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0.8rem;">
+          <label>Restaurant Caption</label>
+          <input id="inp-dp1cap" type="text" placeholder="Our Restaurant 🍽️">
+        </div>
+        <div class="fg" style="margin-bottom:0.8rem;">
+          <label>Temple Photo</label>
+          <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;">
+            <div id="dp2-preview-container">
+              <img id="dp2-preview" src="" style="width:50px;height:50px;object-fit:cover;border-radius:6px;background:#eee;display:none;">
+              <div id="dp2-no-preview" style="width:50px;height:50px;border-radius:6px;background:#f5ead8;border:1px dashed var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🙏</div>
+            </div>
+            <button type="button" class="gift-view-btn" style="margin-top:0;padding:0.35rem 0.8rem;font-size:0.75rem;" onclick="document.getElementById('dp2-file-input').click()">Upload Temple 📸</button>
+            <input type="file" id="dp2-file-input" style="display:none;" accept="image/*" onchange="handleDatePhotoUpload(2, this.files)">
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0.8rem;">
+          <label>Temple Caption</label>
+          <input id="inp-dp2cap" type="text" placeholder="Our Temple 🙏">
+        </div>
+        <hr class="c-divider">
         <div class="fg"><label>Ticket Activity</label><input id="inp-tkt" type="text"></div>
         <div class="fg"><label>Ticket Details</label><input id="inp-tks" type="text"></div>
         <div class="fg"><label>Ticket Validation Info</label><input id="inp-tkv" type="text"></div>
@@ -2314,6 +2362,20 @@
           <h3 id="gm-title">Gift Title</h3>
           <p id="gm-desc" style="margin-bottom:1rem">Gift Description</p>
 
+          <!-- Date venue photos shown inside gift modal -->
+          <div id="gm-date-photos" style="display:none; margin-top:1.2rem;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+              <div style="text-align:center;">
+                <img id="gm-dp1" src="" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:0.4rem;">
+                <p id="gm-dp1-cap" style="font-size:0.78rem;color:var(--muted);font-weight:600;"></p>
+              </div>
+              <div style="text-align:center;">
+                <img id="gm-dp2" src="" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:0.4rem;">
+                <p id="gm-dp2-cap" style="font-size:0.78rem;color:var(--muted);font-weight:600;"></p>
+              </div>
+            </div>
+          </div>
+
           <!-- Special Boarding Ticket Container for Date Venue -->
           <div id="gm-ticket-container" style="display:none;margin-top:1.2rem">
             <div class="gm-ticket">
@@ -2457,18 +2519,44 @@
           Yes! 💕</button>
       </div>
     </div>
-    <div id="proposal-celebration" style="display:none; animation: proposalFadeIn 0.8s ease;">
-      <div style="font-size:4rem; margin-bottom:1rem;">🎉🥰🎉</div>
-      <h2
-        style="font-family:'Playfair Display',Georgia,serif; font-size:clamp(2rem,5vw,3rem); color:#ffe082; margin-bottom:1rem; text-shadow:0 0 30px rgba(255,179,0,0.5);">
-        You Just Made Me the Happiest!</h2>
-      <p style="font-size:1.15rem; color:#fff; line-height:1.8; margin-bottom:1.5rem; max-width:450px;">I can’t wait for
-        our date! Get ready for the most amazing time together. I love you more than words can say. 💖</p>
-      <p style="font-size:1.3rem; color:#ff9ebb; font-family:'Dancing Script',cursive; font-weight:700;">Forever Yours
-        ❤️</p>
-      <button onclick="closeProposalOverlay()"
-        style="margin-top:2rem; padding:0.7rem 2rem; border-radius:50px; border:2px solid rgba(255,255,255,0.3); background:transparent; color:#fff; font-size:0.9rem; cursor:pointer; font-family:'Inter',system-ui,sans-serif; transition:all 0.3s;">Close
-        ✨</button>
+    <div id="proposal-celebration" style="display:none; animation: proposalFadeIn 0.8s ease; max-width:600px; width:100%; overflow-y:auto; max-height:90vh; padding-bottom:1rem;">
+
+      <!-- Step 1: 1 Year of Us -->
+      <div id="yes-step-1" style="text-align:center;">
+        <div style="font-size:3.5rem; margin-bottom:0.5rem;">🌹✨🌹</div>
+        <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:clamp(2rem,5vw,3rem); color:#ffe082; margin-bottom:0.6rem; text-shadow:0 0 30px rgba(255,179,0,0.5);">1 Year of Us 💕</h2>
+        <p style="font-size:1.05rem; color:#fce4ec; line-height:1.8; margin-bottom:2rem; max-width:420px; margin-left:auto; margin-right:auto;">One whole year of laughter, memories, and choosing each other every single day. Shreya, you mean everything to me. 🌸</p>
+        <button onclick="showYesStep(2)" style="padding:0.75rem 2.2rem; border-radius:50px; border:none; background:linear-gradient(135deg,#e0656d,#ff9ebb); color:#fff; font-size:1rem; font-weight:700; cursor:pointer; box-shadow:0 4px 25px rgba(224,101,109,0.5); font-family:'Inter',system-ui,sans-serif;">Read My Letter 💌</button>
+      </div>
+
+      <!-- Step 2: Personal Letter -->
+      <div id="yes-step-2" style="display:none; text-align:left; background:rgba(255,253,249,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:1.8rem; margin-top:0.5rem;">
+        <p style="font-family:'Dancing Script',cursive; font-size:1.5rem; color:#ff9ebb; margin-bottom:1rem;">Dear Shreya,</p>
+        <div id="yes-letter-body" style="font-size:0.97rem; color:rgba(255,255,255,0.9); line-height:1.9; white-space:pre-wrap;"></div>
+        <p style="font-family:'Dancing Script',cursive; font-size:1.4rem; color:#ff9ebb; margin-top:1.2rem;">I love you, Shreya 💕<br>— Prayas</p>
+        <button onclick="showYesStep(3)" style="margin-top:1.5rem; padding:0.7rem 2rem; border-radius:50px; border:none; background:linear-gradient(135deg,#c49a6c,#e0b07a); color:#fff; font-size:0.95rem; font-weight:700; cursor:pointer; font-family:'Inter',system-ui,sans-serif;">See Our Date Plan 🌹</button>
+      </div>
+
+      <!-- Step 3: Date Reveal -->
+      <div id="yes-step-3" style="display:none; text-align:center; margin-top:0.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">🌹</div>
+        <h3 style="font-family:'Playfair Display',Georgia,serif; font-size:1.6rem; color:#ffe082; margin-bottom:0.5rem;">This is really happening, Shreya...</h3>
+        <p style="font-size:0.95rem; color:#fce4ec; margin-bottom:1.2rem; font-style:italic;">Every detail planned, just thinking of your smile 🌸</p>
+        <div id="yes-date-photos" style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:1.2rem;">
+          <div style="text-align:center;">
+            <img id="yes-dp1" src="" style="width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:0.4rem;border:2px solid rgba(255,255,255,0.15);">
+            <p id="yes-dp1-cap" style="font-size:0.8rem;color:#fce4ec;font-weight:600;"></p>
+          </div>
+          <div style="text-align:center;">
+            <img id="yes-dp2" src="" style="width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:0.4rem;border:2px solid rgba(255,255,255,0.15);">
+            <p id="yes-dp2-cap" style="font-size:0.8rem;color:#fce4ec;font-weight:600;"></p>
+          </div>
+        </div>
+        <p id="yes-venue-text" style="font-size:1.1rem; color:#fff; line-height:1.8; margin-bottom:0.5rem;"></p>
+        <p style="font-size:1.3rem; color:#ff9ebb; font-family:'Dancing Script',cursive; font-weight:700; margin-bottom:1.5rem;">I can't wait, Shreya 💕</p>
+        <button onclick="closeProposalOverlay()" style="padding:0.7rem 2rem; border-radius:50px; border:2px solid rgba(255,255,255,0.3); background:transparent; color:#fff; font-size:0.9rem; cursor:pointer; font-family:'Inter',system-ui,sans-serif; transition:all 0.3s;">Close ✨</button>
+      </div>
+
     </div>
   </div>
 
@@ -2533,7 +2621,11 @@
           ticketDetails: "✨ Dinner, Drinks & Quality Time ✨",
           ticketValidation: "VALID FOREVER • FOR MY SWEETHEART",
           image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000",
-          venue: "Cozy Beachside Resort"
+          venue: "Cozy Beachside Resort",
+          datePhoto1: "", datePhoto1Caption: "Our Restaurant 🍽️",
+          datePhoto2: "", datePhoto2Caption: "Our Temple 🙏",
+          datePhoto1LocalId: "", datePhoto2LocalId: "",
+          datePhoto1CdnUrl: "", datePhoto2CdnUrl: ""
         }
       }
     };
@@ -2886,6 +2978,26 @@
         document.getElementById('gm-ticket-val').textContent = state.gifts.date.ticketValidation || "VALID FOREVER • FOR MY SWEETHEART";
 
         ticketCont.style.display = 'block';
+
+        // Show date photos in modal
+        const datePhotoCont = document.getElementById('gm-date-photos');
+        const dp1El = document.getElementById('gm-dp1');
+        const dp2El = document.getElementById('gm-dp2');
+        const dp1Cap = document.getElementById('gm-dp1-cap');
+        const dp2Cap = document.getElementById('gm-dp2-cap');
+        if (datePhotoCont) {
+          const has1 = !!state.gifts.date.datePhoto1;
+          const has2 = !!state.gifts.date.datePhoto2;
+          if (has1 || has2) {
+            datePhotoCont.style.display = 'block';
+            if (dp1El) { dp1El.src = state.gifts.date.datePhoto1 || ''; dp1El.style.display = has1 ? 'block' : 'none'; }
+            if (dp2El) { dp2El.src = state.gifts.date.datePhoto2 || ''; dp2El.style.display = has2 ? 'block' : 'none'; }
+            if (dp1Cap) dp1Cap.textContent = state.gifts.date.datePhoto1Caption || 'Our Restaurant 🍽️';
+            if (dp2Cap) dp2Cap.textContent = state.gifts.date.datePhoto2Caption || 'Our Temple 🙏';
+          } else {
+            datePhotoCont.style.display = 'none';
+          }
+        }
       }
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -2983,6 +3095,8 @@
       document.getElementById('inp-tkt').value = state.gifts.date.ticketTitle;
       document.getElementById('inp-tks').value = state.gifts.date.ticketDetails;
       if (document.getElementById('inp-tkv')) document.getElementById('inp-tkv').value = state.gifts.date.ticketValidation || '';
+      if (document.getElementById('inp-dp1cap')) document.getElementById('inp-dp1cap').value = state.gifts.date.datePhoto1Caption || '';
+      if (document.getElementById('inp-dp2cap')) document.getElementById('inp-dp2cap').value = state.gifts.date.datePhoto2Caption || '';
       if (typeof updateGiftPreviews === 'function') updateGiftPreviews();
       renderBalloonInputs();
       renderGalleryInputs();
@@ -3180,6 +3294,8 @@
       state.gifts.date.venue = document.getElementById('inp-g3ven').value;
       state.gifts.date.ticketTitle = document.getElementById('inp-tkt').value;
       state.gifts.date.ticketDetails = document.getElementById('inp-tks').value;
+      if (document.getElementById('inp-dp1cap')) state.gifts.date.datePhoto1Caption = document.getElementById('inp-dp1cap').value;
+      if (document.getElementById('inp-dp2cap')) state.gifts.date.datePhoto2Caption = document.getElementById('inp-dp2cap').value;
       if (document.getElementById('inp-tkv')) state.gifts.date.ticketValidation = document.getElementById('inp-tkv').value;
       document.querySelectorAll('.b-inp').forEach(el => { const i = parseInt(el.dataset.i); state.balloonMessages[i] = el.value; });
       document.querySelectorAll('.g-cap').forEach(el => { const i = parseInt(el.dataset.i); state.galleryItems[i].caption = el.value; });
@@ -3505,6 +3621,26 @@
       }
     }
 
+    async function handleDatePhotoUpload(n, files) {
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      try {
+        const key = 'dp_' + n + '_' + Math.random().toString(36).substring(2, 7);
+        const localId = await saveMoment(file, null, null, key);
+        const objectUrl = URL.createObjectURL(file);
+        if (n === 1) {
+          state.gifts.date.datePhoto1 = objectUrl;
+          state.gifts.date.datePhoto1LocalId = localId;
+          state.gifts.date.datePhoto1CdnUrl = '';
+        } else {
+          state.gifts.date.datePhoto2 = objectUrl;
+          state.gifts.date.datePhoto2LocalId = localId;
+          state.gifts.date.datePhoto2CdnUrl = '';
+        }
+        updateGiftPreviews();
+      } catch(err) { console.error("Date photo upload error:", err); }
+    }
+
     function updateGiftPreviews() {
       const p1 = document.getElementById('g1-preview');
       const np1 = document.getElementById('g1-no-preview');
@@ -3530,6 +3666,19 @@
           p2.style.display = 'none';
           np2.style.display = 'flex';
         }
+      }
+
+      const dp1 = document.getElementById('dp1-preview');
+      const ndp1 = document.getElementById('dp1-no-preview');
+      if (dp1 && ndp1) {
+        if (state.gifts.date.datePhoto1) { dp1.src = state.gifts.date.datePhoto1; dp1.style.display = 'block'; ndp1.style.display = 'none'; }
+        else { dp1.style.display = 'none'; ndp1.style.display = 'flex'; }
+      }
+      const dp2 = document.getElementById('dp2-preview');
+      const ndp2 = document.getElementById('dp2-no-preview');
+      if (dp2 && ndp2) {
+        if (state.gifts.date.datePhoto2) { dp2.src = state.gifts.date.datePhoto2; dp2.style.display = 'block'; ndp2.style.display = 'none'; }
+        else { dp2.style.display = 'none'; ndp2.style.display = 'flex'; }
       }
 
       const p3 = document.getElementById('g3-preview');
@@ -3956,6 +4105,21 @@
       const progressText = document.getElementById('collage-progress-text');
 
       progressBar.style.width = '0%';
+      progressText.textContent = 'Preloading music...';
+
+      // Pre-fetch and decode audio FIRST so it is ready when recording starts
+      const musicCtxEarly = new (window.AudioContext || window.webkitAudioContext)();
+      if (musicCtxEarly.state === 'suspended') await musicCtxEarly.resume();
+      let preDecodedAudio = null;
+      try {
+        const audioResp = await fetch("perfect_mp3.mp3");
+        const audioBuf = await audioResp.arrayBuffer();
+        preDecodedAudio = await musicCtxEarly.decodeAudioData(audioBuf);
+      } catch(e) {
+        console.warn('Audio prefetch failed:', e);
+      }
+      await musicCtxEarly.close();
+
       progressText.textContent = 'Preloading images & videos...';
 
       const preloaded = [];
@@ -3991,24 +4155,19 @@
       const audioDest = musicCtx.createMediaStreamDestination();
       combinedStream.addTrack(audioDest.stream.getAudioTracks()[0]);
 
-      // -- PERFECT AUDIO via fetch + decodeAudioData for reliable capture --
+      // -- PERFECT AUDIO: already decoded, start instantly with recording --
       let collageMusicStopped = false;
       let collageAudioSource = null;
 
       if (musicCtx.state === 'suspended') await musicCtx.resume();
 
-      fetch("perfect_mp3.mp3")
-        .then(r => r.arrayBuffer())
-        .then(buf => musicCtx.decodeAudioData(buf))
-        .then(decoded => {
-          if (collageMusicStopped) return;
-          collageAudioSource = musicCtx.createBufferSource();
-          collageAudioSource.buffer = decoded;
-          collageAudioSource.connect(audioDest);
-          collageAudioSource.connect(musicCtx.destination);
-          collageAudioSource.start(0, 50);
-        })
-        .catch(e => console.warn('Collage audio fetch error:', e));
+      if (preDecodedAudio) {
+        collageAudioSource = musicCtx.createBufferSource();
+        collageAudioSource.buffer = preDecodedAudio;
+        collageAudioSource.connect(audioDest);
+        collageAudioSource.connect(musicCtx.destination);
+        collageAudioSource.start(0, 100); // start at 1:40
+      }
 
       const _origStop = stopCollageGeneration;
       stopCollageGeneration = function () {
@@ -4101,11 +4260,11 @@
 
       let totalDuration = 0;
       const slides = preloaded.map((media) => {
-        let duration = 2500;
+        let duration = 5000; // minimum 5 seconds for photos
         if (media.type === 'video') {
           const v = media.element;
-          const vDur = (v.duration && !isNaN(v.duration) && v.duration > 0) ? v.duration * 1000 : 3500;
-          duration = Math.min(vDur, 3500);
+          const vDur = (v.duration && !isNaN(v.duration) && v.duration > 0) ? v.duration * 1000 : 5000;
+          duration = Math.max(vDur, 5000); // at least 5 seconds for videos too
         }
         const slide = {
           media,
@@ -4349,27 +4508,96 @@
       }
     }
 
+    function showYesStep(n) {
+      [1,2,3].forEach(i => {
+        const el = document.getElementById('yes-step-' + i);
+        if (el) el.style.display = (i === n) ? 'block' : 'none';
+      });
+      if (n === 2) {
+        // Populate letter
+        const letterEl = document.getElementById('yes-letter-body');
+        if (letterEl) letterEl.textContent = (state.letterP1 || '') + (state.letterP2 ? '\n\n' + state.letterP2 : '');
+      }
+      if (n === 3) {
+        // Populate date reveal photos
+        const dp1 = document.getElementById('yes-dp1');
+        const dp2 = document.getElementById('yes-dp2');
+        const dp1cap = document.getElementById('yes-dp1-cap');
+        const dp2cap = document.getElementById('yes-dp2-cap');
+        const photoGrid = document.getElementById('yes-date-photos');
+        const has1 = !!state.gifts.date.datePhoto1;
+        const has2 = !!state.gifts.date.datePhoto2;
+        if (photoGrid) photoGrid.style.display = (has1 || has2) ? 'grid' : 'none';
+        if (dp1) { dp1.src = state.gifts.date.datePhoto1 || ''; dp1.parentElement.style.display = has1 ? 'block' : 'none'; }
+        if (dp2) { dp2.src = state.gifts.date.datePhoto2 || ''; dp2.parentElement.style.display = has2 ? 'block' : 'none'; }
+        if (dp1cap) dp1cap.textContent = state.gifts.date.datePhoto1Caption || 'Our Restaurant 🍽️';
+        if (dp2cap) dp2cap.textContent = state.gifts.date.datePhoto2Caption || 'Our Temple 🙏';
+        const venueEl = document.getElementById('yes-venue-text');
+        if (venueEl && state.gifts.date.venue) venueEl.textContent = '📍 ' + state.gifts.date.venue + ' — our table is waiting 🌹';
+      }
+    }
+
     function proposalYesClicked() {
       const content = document.getElementById('proposal-content');
       const celebration = document.getElementById('proposal-celebration');
       if (content) content.style.display = 'none';
-      if (celebration) celebration.style.display = 'block';
+      if (celebration) { celebration.style.display = 'block'; showYesStep(1); }
 
-      // Spawn confetti
+      // Stop the collage video
+      const collageVideo = document.getElementById('collage-video');
+      if (collageVideo) { collageVideo.pause(); }
+
       const overlay = document.getElementById('proposal-overlay');
-      const colors = ['#e0656d', '#ff9ebb', '#ffe082', '#ffb300', '#fce4ec', '#fff', '#c49a6c'];
-      for (let i = 0; i < 60; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.left = Math.random() * 100 + '%';
-        piece.style.top = '-10px';
-        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.width = (6 + Math.random() * 8) + 'px';
-        piece.style.height = (6 + Math.random() * 8) + 'px';
-        piece.style.animationDelay = (Math.random() * 2) + 's';
-        piece.style.animationDuration = (2 + Math.random() * 2) + 's';
-        overlay.appendChild(piece);
+
+      // 🌹 Rose petals falling
+      const petalEmojis = ['🌹','🌸','🌺','🏵️'];
+      for (let i = 0; i < 40; i++) {
+        const petal = document.createElement('div');
+        petal.textContent = petalEmojis[Math.floor(Math.random() * petalEmojis.length)];
+        petal.style.cssText = `position:absolute;font-size:${16 + Math.random()*18}px;left:${Math.random()*100}%;top:-40px;pointer-events:none;z-index:9999;animation:confettiFall ${2.5+Math.random()*2.5}s ease-out ${Math.random()*2}s forwards;`;
+        overlay.appendChild(petal);
       }
+
+      // 🎆 Fireworks burst - coloured circles exploding outward
+      const canvas = document.createElement('canvas');
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:9998;';
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      overlay.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      const fireworks = [];
+      const fwColors = ['#e0656d','#ff9ebb','#ffe082','#ffb300','#fce4ec','#fff','#c49a6c','#ff6b9d'];
+      function spawnFirework() {
+        const x = 100 + Math.random() * (canvas.width - 200);
+        const y = 80 + Math.random() * (canvas.height * 0.5);
+        const color = fwColors[Math.floor(Math.random() * fwColors.length)];
+        const particles = [];
+        for (let i = 0; i < 28; i++) {
+          const angle = (i / 28) * Math.PI * 2;
+          const speed = 3 + Math.random() * 4;
+          particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, alpha: 1, r: 3+Math.random()*3 });
+        }
+        fireworks.push({ particles, color });
+      }
+      let fwFrame = 0;
+      const fwInterval = setInterval(spawnFirework, 400);
+      setTimeout(() => clearInterval(fwInterval), 3000);
+      function drawFireworks() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        fireworks.forEach(fw => {
+          fw.particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.alpha -= 0.018;
+            if (p.alpha > 0) {
+              ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = fw.color;
+              ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill(); ctx.restore();
+            }
+          });
+        });
+        fwFrame++;
+        if (fwFrame < 240) requestAnimationFrame(drawFireworks);
+        else canvas.remove();
+      }
+      spawnFirework(); spawnFirework();
+      drawFireworks();
     }
 
     function closeProposalOverlay() {

@@ -2751,7 +2751,7 @@
         },
         earrings: {
           title: "Your Photo Collage",
-          description: "Every photo in here is a piece of my heart — moments I never want to forget, memories I will always treasure. This is us, captured forever. 🌸",
+          description: "A little collage made of photos of you — every single one a moment I never want to forget. Looking at this collage and seeing your smile in each one makes me fall for you all over again. 💕",
           image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1000"
         },
         date: {
@@ -2772,27 +2772,30 @@
     };
 
     // ═══════════════════════════════════════════════════
-    // MUSIC PLAYLIST PLAYER (YouTube audio-only, peak start, 30s min/track)
+    // MUSIC PLAYLIST PLAYER (YouTube audio-only, peak start, 60s min/track, crossfade)
     // ═══════════════════════════════════════════════════
     const PLAYLIST = [
       { id: 'vr8RaNuWjWc', title: 'Falak Tak — Tashan',          peak: 52 },
-      { id: 'BAp87r3dWUE', title: 'Hale Dil — Murder 2',          peak: 55 },
+      { id: 'BAp87r3dWUE', title: 'Hale Dil — Murder 2',          peak: 45 },
       { id: 'RDmpYx5bdoA', title: 'Sham — Aisha',                 peak: 60 },
       { id: 'kRlO3SudmMI', title: 'Saibo — Shor in the City',     peak: 50 },
       { id: 'fSS_R91Nimw', title: 'Iktara (Male) — Wake Up Sid',  peak: 45 },
       { id: 'CS6UX5SmjFw', title: 'Mera Yaar — Bhaag Milkha Bhaag', peak: 55 },
       { id: 'hKEEbtMkKms', title: 'Yun Hi — Tanu Weds Manu',      peak: 50 }
     ];
-    const MIN_TRACK_SECONDS = 30; // play at least this long before chaining
+    const MIN_TRACK_SECONDS = 60; // play at least this long before chaining
+    const FADE_STEP_MS = 40;      // how often to adjust volume during fade
+    const FADE_DURATION_MS = 900; // total crossfade duration
 
     let spotifyDrawerOpen = false;
     let ytPlayer = null;
     let ytReady = false;
     let currentTrackIndex = 0;
     let musicStarted = false;
-    let minTimeReached = false;
-    let minTimeTimer = null;
+    let trackStartTime = null;
+    let advanceTimer = null;
     let pendingAutoplay = false;
+    let fadeInterval = null;
 
     function toggleSpotifyDrawer() {
       const drawer = document.getElementById('spotify-drawer');
@@ -2841,21 +2844,74 @@
         if (disc) disc.classList.remove('paused');
         if (status) status.textContent = 'Now playing 🎶';
 
-        // Start (or restart) the 30s minimum-play timer for this track
-        if (minTimeTimer) clearTimeout(minTimeTimer);
-        minTimeReached = false;
-        minTimeTimer = setTimeout(() => { minTimeReached = true; }, MIN_TRACK_SECONDS * 1000);
+        // Record when this track started playing (for the minimum play time)
+        if (!trackStartTime) {
+          trackStartTime = Date.now();
+        }
       } else if (event.data === YT.PlayerState.PAUSED) {
         if (playPauseBtn) playPauseBtn.textContent = '▶';
         if (disc) disc.classList.add('paused');
         if (status) status.textContent = 'Paused';
       } else if (event.data === YT.PlayerState.ENDED) {
-        // Song finished naturally — go to next regardless of min-time
-        goToNextTrack();
+        // Song finished naturally — advance, but never sooner than MIN_TRACK_SECONDS
+        advanceWithMinimumDelay();
       }
     }
 
-    function playPlaylistTrack(index, autoplay) {
+    function advanceWithMinimumDelay() {
+      const elapsed = trackStartTime ? (Date.now() - trackStartTime) : MIN_TRACK_SECONDS * 1000;
+      const remaining = Math.max(0, MIN_TRACK_SECONDS * 1000 - elapsed);
+      if (advanceTimer) clearTimeout(advanceTimer);
+      advanceTimer = setTimeout(() => {
+        fadeOutAndSwitch((currentTrackIndex + 1) % PLAYLIST.length);
+      }, remaining);
+    }
+
+    function fadeOutAndSwitch(nextIndex) {
+      if (!ytPlayer || typeof ytPlayer.setVolume !== 'function') {
+        playPlaylistTrack(nextIndex, true);
+        return;
+      }
+      if (fadeInterval) clearInterval(fadeInterval);
+
+      const startVol = (typeof ytPlayer.getVolume === 'function') ? ytPlayer.getVolume() : 100;
+      const targetVol = (startVol && startVol > 0) ? startVol : 100;
+      const steps = Math.max(1, Math.round(FADE_DURATION_MS / FADE_STEP_MS));
+      let step = 0;
+
+      fadeInterval = setInterval(() => {
+        step++;
+        const vol = Math.max(0, Math.round(targetVol * (1 - step / steps)));
+        try { ytPlayer.setVolume(vol); } catch (e) {}
+        if (step >= steps) {
+          clearInterval(fadeInterval);
+          fadeInterval = null;
+          playPlaylistTrack(nextIndex, true, targetVol);
+        }
+      }, FADE_STEP_MS);
+    }
+
+    function fadeIn(targetVol) {
+      if (!ytPlayer || typeof ytPlayer.setVolume !== 'function') return;
+      if (fadeInterval) clearInterval(fadeInterval);
+
+      const goal = (typeof targetVol === 'number') ? targetVol : 100;
+      try { ytPlayer.setVolume(0); } catch (e) {}
+      const steps = Math.max(1, Math.round(FADE_DURATION_MS / FADE_STEP_MS));
+      let step = 0;
+
+      fadeInterval = setInterval(() => {
+        step++;
+        const vol = Math.min(goal, Math.round(goal * (step / steps)));
+        try { ytPlayer.setVolume(vol); } catch (e) {}
+        if (step >= steps) {
+          clearInterval(fadeInterval);
+          fadeInterval = null;
+        }
+      }, FADE_STEP_MS);
+    }
+
+    function playPlaylistTrack(index, autoplay, fadeInVolume) {
       if (index < 0) index = PLAYLIST.length - 1;
       if (index >= PLAYLIST.length) index = 0;
       currentTrackIndex = index;
@@ -2866,39 +2922,44 @@
       const npTitle = document.getElementById('np-title');
       if (npTitle) npTitle.textContent = track.title;
 
-      if (minTimeTimer) clearTimeout(minTimeTimer);
-      minTimeReached = false;
+      if (advanceTimer) clearTimeout(advanceTimer);
+      trackStartTime = null;
 
       if (!ytReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') {
         pendingAutoplay = true;
         return;
       }
 
+      // If a fade-in volume was supplied, start this track silent and fade up —
+      // gives a smooth crossfade-style transition between songs
+      if (typeof fadeInVolume === 'number' && typeof ytPlayer.setVolume === 'function') {
+        try { ytPlayer.setVolume(0); } catch (e) {}
+      }
+
       ytPlayer.loadVideoById({ videoId: track.id, startSeconds: track.peak });
       if (autoplay) {
         ytPlayer.playVideo();
       }
+
+      if (typeof fadeInVolume === 'number') {
+        // Give the new video a brief moment to start before fading volume up
+        setTimeout(() => fadeIn(fadeInVolume), 150);
+      }
     }
 
     function goToNextTrack() {
-      if (!minTimeReached) {
-        // Ensure each track gets at least MIN_TRACK_SECONDS before advancing
-        const remaining = MIN_TRACK_SECONDS * 1000;
-        setTimeout(() => {
-          playPlaylistTrack((currentTrackIndex + 1) % PLAYLIST.length, true);
-        }, remaining);
-        return;
-      }
-      playPlaylistTrack((currentTrackIndex + 1) % PLAYLIST.length, true);
+      advanceWithMinimumDelay();
     }
 
     function nextTrack() {
-      // Manual skip: respects nothing extra, just go
-      goToNextTrack();
+      // Manual skip: stop the auto-advance timer and crossfade immediately
+      if (advanceTimer) clearTimeout(advanceTimer);
+      fadeOutAndSwitch((currentTrackIndex + 1) % PLAYLIST.length);
     }
 
     function prevTrack() {
-      playPlaylistTrack((currentTrackIndex - 1 + PLAYLIST.length) % PLAYLIST.length, true);
+      if (advanceTimer) clearTimeout(advanceTimer);
+      fadeOutAndSwitch((currentTrackIndex - 1 + PLAYLIST.length) % PLAYLIST.length);
     }
 
     function togglePlayPause() {

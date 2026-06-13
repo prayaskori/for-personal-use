@@ -2796,6 +2796,7 @@
     let advanceTimer = null;
     let pendingAutoplay = false;
     let fadeInterval = null;
+    let _bgVolBeforeVideo = 100; // saved volume level before collage video mutes the bg music
 
     function toggleSpotifyDrawer() {
       const drawer = document.getElementById('spotify-drawer');
@@ -3686,6 +3687,15 @@
         await uploadAssetIfNeeded(state.gifts.earrings);
         await uploadAssetIfNeeded(state.gifts.date);
 
+        // Upload the two date photos if they have a localId but no cdnUrl yet
+        const datePhoto1Asset = { localId: state.gifts.date.datePhoto1LocalId, cdnUrl: state.gifts.date.datePhoto1CdnUrl || '' };
+        await uploadAssetIfNeeded(datePhoto1Asset);
+        state.gifts.date.datePhoto1CdnUrl = datePhoto1Asset.cdnUrl;
+
+        const datePhoto2Asset = { localId: state.gifts.date.datePhoto2LocalId, cdnUrl: state.gifts.date.datePhoto2CdnUrl || '' };
+        await uploadAssetIfNeeded(datePhoto2Asset);
+        state.gifts.date.datePhoto2CdnUrl = datePhoto2Asset.cdnUrl;
+
         for (let i = 0; i < state.galleryItems.length; i++) {
           await uploadAssetIfNeeded(state.galleryItems[i]);
         }
@@ -3742,7 +3752,13 @@
               venue2: state.gifts.date.venue2 || '',
               ticketTitle: state.gifts.date.ticketTitle,
               ticketDetails: state.gifts.date.ticketDetails,
-              ticketValidation: state.gifts.date.ticketValidation
+              ticketValidation: state.gifts.date.ticketValidation,
+              datePhoto1: state.gifts.date.datePhoto1LocalId || state.gifts.date.datePhoto1 || '',
+              datePhoto1LocalId: state.gifts.date.datePhoto1LocalId || '',
+              datePhoto1CdnUrl: state.gifts.date.datePhoto1CdnUrl || '',
+              datePhoto2: state.gifts.date.datePhoto2LocalId || state.gifts.date.datePhoto2 || '',
+              datePhoto2LocalId: state.gifts.date.datePhoto2LocalId || '',
+              datePhoto2CdnUrl: state.gifts.date.datePhoto2CdnUrl || ''
             }
           }
         };
@@ -4544,7 +4560,15 @@
         video.src = videoUrl;
         video.load();
 
-        // Show proposal overlay when video finishes playing
+        // Pause background music when the collage video starts playing
+        video.addEventListener('play', function () {
+          if (musicStarted && ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+            _bgVolBeforeVideo = (typeof ytPlayer.getVolume === 'function') ? ytPlayer.getVolume() : 100;
+            ytPlayer.pauseVideo();
+          }
+        });
+
+        // Show proposal overlay when video finishes playing, and resume bg music
         video.addEventListener('ended', function () {
           const overlay = document.getElementById('proposal-overlay');
           if (overlay) {
@@ -4554,6 +4578,12 @@
             document.getElementById('proposal-celebration').style.display = 'none';
             const noBtn = document.getElementById('proposal-no-btn');
             if (noBtn) { noBtn.style.display = 'inline-block'; noBtn.style.animation = ''; }
+          }
+          // Resume background music from where it was paused, fading back in
+          if (musicStarted && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+            try { ytPlayer.setVolume(0); } catch (e) {}
+            ytPlayer.playVideo();
+            fadeIn(_bgVolBeforeVideo || 100);
           }
         });
 

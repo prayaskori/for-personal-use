@@ -7,6 +7,7 @@
   <title>Happy Anniversary, My Love 💕</title>
   <meta name="description" content="A personal anniversary and apology page made with love.">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -650,7 +651,7 @@
 
     .sd-embed-container {
       width: 100%;
-      height: 130px;
+      min-height: 78px;
       background: #f7eded;
       border-radius: 10px;
       overflow: hidden;
@@ -658,6 +659,98 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0.7rem;
+    }
+
+    .sd-embed-container iframe {
+      position: absolute;
+      width: 1px !important;
+      height: 1px !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .now-playing-card {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      width: 100%;
+    }
+
+    .np-disc {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose), var(--rose-dk));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      animation: spin 4s linear infinite;
+    }
+
+    .np-disc.paused {
+      animation-play-state: paused;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .np-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .np-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .np-status {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .np-controls {
+      display: flex;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .np-btn {
+      background: var(--rose-lt);
+      color: var(--rose-dk);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+
+    .np-btn:hover {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    #music-start-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 10px 36px rgba(224, 101, 109, .55);
+    }
+
+    #music-start-btn {
+      transition: all .3s;
     }
 
     /* ═══════════════════════════════════════
@@ -2125,7 +2218,7 @@
   </div>
 
   <!-- ═══════════════════════════════════════
-     SPOTIFY MUSIC DRAWER
+     MUSIC PLAYER (YouTube-based playlist)
 ═══════════════════════════════════════ -->
   <button class="spotify-trigger" id="spotify-trigger" onclick="toggleSpotifyDrawer()">🎵 Our Playlist</button>
 
@@ -2134,18 +2227,37 @@
       <h4>🌸 Our Playlist 🌸</h4>
       <button class="sd-close" onclick="toggleSpotifyDrawer()">×</button>
     </div>
-    <select class="sd-select" id="spotify-select" onchange="changeSpotifyTrack(this.value)">
-      <option value="0aCBMxHsOqipZCBVkMqGBQ">Falak Tak — Tum Ho Raazi</option>
-      <option value="3gVekNqKMbAMjzAcbXFkJC">Hale Dil — Murder 2</option>
-      <option value="5Q58RkKyUafm15Syxg79DW">Sham — Aisha</option>
-      <option value="5pPyvA03RKSJrAnnDcq0nh">Saibo — Shor in the City</option>
-      <option value="0UYKuhzPMkvRQWO6luWBhI">Iktara (Male) — Wake Up Sid</option>
-      <option value="2NECp5Tvb5Lm6TbJf0Y8xI">Mera Yaar — Bhaag Milkha Bhaag</option>
-      <option value="6z5zRQHFEEBrvMkVjjCN8S">Yun Hi — Tanu Weds Manu</option>
+    <select class="sd-select" id="spotify-select" onchange="playPlaylistTrack(parseInt(this.value))">
+      <option value="0">Falak Tak — Tashan</option>
+      <option value="1">Hale Dil — Murder 2</option>
+      <option value="2">Sham — Aisha</option>
+      <option value="3">Saibo — Shor in the City</option>
+      <option value="4">Iktara (Male) — Wake Up Sid</option>
+      <option value="5">Mera Yaar — Bhaag Milkha Bhaag</option>
+      <option value="6">Yun Hi — Tanu Weds Manu</option>
     </select>
     <div class="sd-embed-container" id="spotify-embed-container">
-      <div style="font-size:0.75rem;color:var(--muted)">Select a song to load player...</div>
+      <div class="now-playing-card">
+        <div class="np-disc" id="np-disc">🎵</div>
+        <div class="np-info">
+          <div class="np-title" id="np-title">Falak Tak — Tashan</div>
+          <div class="np-status" id="np-status">Tap "Play Our Music" to start</div>
+        </div>
+        <div class="np-controls">
+          <button class="np-btn" onclick="prevTrack()" title="Previous">⏮</button>
+          <button class="np-btn" id="np-playpause" onclick="togglePlayPause()" title="Play/Pause">▶</button>
+          <button class="np-btn" onclick="nextTrack()" title="Next">⏭</button>
+        </div>
+      </div>
+      <div id="yt-player" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
     </div>
+  </div>
+
+  <!-- TAP TO PLAY MUSIC OVERLAY -->
+  <div id="music-start-overlay" style="position:fixed; inset:0; z-index:9000; background:rgba(61,35,40,0.55); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:1.5rem;">
+    <button id="music-start-btn" onclick="startOurMusic()" style="background:linear-gradient(135deg,var(--rose),var(--rose-dk)); color:#fff; border:none; padding:1.1rem 2.4rem; border-radius:50px; font-weight:700; font-size:1.05rem; cursor:pointer; box-shadow:0 8px 30px rgba(224,101,109,.45); font-family:var(--sans); display:flex; align-items:center; gap:.6rem; letter-spacing:.5px;">
+      🎵 Tap to Play Our Music ❤️
+    </button>
   </div>
 
   <!-- ═══════════════════════════════════════
@@ -2660,42 +2772,168 @@
     };
 
     // ═══════════════════════════════════════════════════
-    // SPOTIFY PLAYER DRAWER LOGIC
+    // MUSIC PLAYLIST PLAYER (YouTube audio-only, peak start, 30s min/track)
     // ═══════════════════════════════════════════════════
+    const PLAYLIST = [
+      { id: 'vr8RaNuWjWc', title: 'Falak Tak — Tashan',          peak: 52 },
+      { id: 'BAp87r3dWUE', title: 'Hale Dil — Murder 2',          peak: 55 },
+      { id: 'RDmpYx5bdoA', title: 'Sham — Aisha',                 peak: 60 },
+      { id: 'kRlO3SudmMI', title: 'Saibo — Shor in the City',     peak: 50 },
+      { id: 'fSS_R91Nimw', title: 'Iktara (Male) — Wake Up Sid',  peak: 45 },
+      { id: 'CS6UX5SmjFw', title: 'Mera Yaar — Bhaag Milkha Bhaag', peak: 55 },
+      { id: 'hKEEbtMkKms', title: 'Yun Hi — Tanu Weds Manu',      peak: 50 }
+    ];
+    const MIN_TRACK_SECONDS = 30; // play at least this long before chaining
+
     let spotifyDrawerOpen = false;
-    let currentSpotifyTrackId = '6z5zRQHFEEBrvMkVjjCN8S'; // Default to Yun Hi
+    let ytPlayer = null;
+    let ytReady = false;
+    let currentTrackIndex = 0;
+    let musicStarted = false;
+    let minTimeReached = false;
+    let minTimeTimer = null;
+    let pendingAutoplay = false;
 
     function toggleSpotifyDrawer() {
       const drawer = document.getElementById('spotify-drawer');
       spotifyDrawerOpen = !spotifyDrawerOpen;
       if (spotifyDrawerOpen) {
         drawer.classList.add('open');
-        if (!document.getElementById('spotify-iframe')) {
-          changeSpotifyTrack(currentSpotifyTrackId);
-        }
       } else {
         drawer.classList.remove('open');
       }
     }
 
-    function changeSpotifyTrack(trackId, startAt) {
-      currentSpotifyTrackId = trackId;
-      const container = document.getElementById('spotify-embed-container');
-      container.innerHTML = `
-    <iframe id="spotify-iframe" style="border-radius:12px" 
-      src="https://open.spotify.com/embed/track/${trackId}?utm_source=generator&autoplay=1" 
-      width="100%" height="152" frameBorder="0" allowfullscreen="" 
-      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-      loading="lazy">
-    </iframe>
-  `;
+    // Called automatically by the YouTube IFrame API script once loaded
+    function onYouTubeIframeAPIReady() {
+      ytReady = true;
+      ytPlayer = new YT.Player('yt-player', {
+        height: '1',
+        width: '1',
+        videoId: PLAYLIST[0].id,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          start: PLAYLIST[0].peak,
+          playsinline: 1
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      if (pendingAutoplay) {
+        pendingAutoplay = false;
+        playPlaylistTrack(currentTrackIndex, true);
+      }
+    }
+
+    function onPlayerStateChange(event) {
+      const playPauseBtn = document.getElementById('np-playpause');
+      const disc = document.getElementById('np-disc');
+      const status = document.getElementById('np-status');
+
+      if (event.data === YT.PlayerState.PLAYING) {
+        if (playPauseBtn) playPauseBtn.textContent = '⏸';
+        if (disc) disc.classList.remove('paused');
+        if (status) status.textContent = 'Now playing 🎶';
+
+        // Start (or restart) the 30s minimum-play timer for this track
+        if (minTimeTimer) clearTimeout(minTimeTimer);
+        minTimeReached = false;
+        minTimeTimer = setTimeout(() => { minTimeReached = true; }, MIN_TRACK_SECONDS * 1000);
+      } else if (event.data === YT.PlayerState.PAUSED) {
+        if (playPauseBtn) playPauseBtn.textContent = '▶';
+        if (disc) disc.classList.add('paused');
+        if (status) status.textContent = 'Paused';
+      } else if (event.data === YT.PlayerState.ENDED) {
+        // Song finished naturally — go to next regardless of min-time
+        goToNextTrack();
+      }
+    }
+
+    function playPlaylistTrack(index, autoplay) {
+      if (index < 0) index = PLAYLIST.length - 1;
+      if (index >= PLAYLIST.length) index = 0;
+      currentTrackIndex = index;
+      const track = PLAYLIST[index];
+
       const select = document.getElementById('spotify-select');
-      if (select && select.value !== trackId) {
-        select.value = trackId;
+      if (select) select.value = String(index);
+      const npTitle = document.getElementById('np-title');
+      if (npTitle) npTitle.textContent = track.title;
+
+      if (minTimeTimer) clearTimeout(minTimeTimer);
+      minTimeReached = false;
+
+      if (!ytReady || !ytPlayer || typeof ytPlayer.loadVideoById !== 'function') {
+        pendingAutoplay = true;
+        return;
+      }
+
+      ytPlayer.loadVideoById({ videoId: track.id, startSeconds: track.peak });
+      if (autoplay) {
+        ytPlayer.playVideo();
+      }
+    }
+
+    function goToNextTrack() {
+      if (!minTimeReached) {
+        // Ensure each track gets at least MIN_TRACK_SECONDS before advancing
+        const remaining = MIN_TRACK_SECONDS * 1000;
+        setTimeout(() => {
+          playPlaylistTrack((currentTrackIndex + 1) % PLAYLIST.length, true);
+        }, remaining);
+        return;
+      }
+      playPlaylistTrack((currentTrackIndex + 1) % PLAYLIST.length, true);
+    }
+
+    function nextTrack() {
+      // Manual skip: respects nothing extra, just go
+      goToNextTrack();
+    }
+
+    function prevTrack() {
+      playPlaylistTrack((currentTrackIndex - 1 + PLAYLIST.length) % PLAYLIST.length, true);
+    }
+
+    function togglePlayPause() {
+      if (!ytPlayer) return;
+      const state = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
+      if (state === YT.PlayerState.PLAYING) {
+        ytPlayer.pauseVideo();
+      } else {
+        ytPlayer.playVideo();
+      }
+    }
+
+    // "Tap to Play Our Music" overlay handler
+    function startOurMusic() {
+      musicStarted = true;
+      const overlay = document.getElementById('music-start-overlay');
+      if (overlay) overlay.style.display = 'none';
+
+      // Open the playlist drawer so she can see what's playing
+      const drawer = document.getElementById('spotify-drawer');
+      if (drawer && !spotifyDrawerOpen) {
+        spotifyDrawerOpen = true;
+        drawer.classList.add('open');
+      }
+
+      currentTrackIndex = 0;
+      if (ytReady && ytPlayer) {
+        playPlaylistTrack(0, true);
+      } else {
+        pendingAutoplay = true;
       }
     }
 
     // Keep AudioContext for pop and sparkle sounds only
+
     let audioCtx = null;
     function getCtx() {
       if (!audioCtx) {
@@ -4762,43 +5000,10 @@
         setTimeout(() => spinner.remove(), 500);
       }
 
-      // Auto-open Spotify drawer with Falak Tak; chain to Hale Dil when it ends
-      const FALAK_TAK = '0aCBMxHsOqipZCBVkMqGBQ';
-      const HALE_DIL  = '3gVekNqKMbAMjzAcbXFkJC';
-      // Most-replayed parts: Falak Tak ~2:10 (130s), Hale Dil ~1:45 (105s)
-      const FALAK_TAK_START = 130;
-      const HALE_DIL_START  = 105;
-
-      setTimeout(() => {
-        const select = document.getElementById('spotify-select');
-        if (select) select.value = FALAK_TAK;
-        currentSpotifyTrackId = FALAK_TAK;
-        changeSpotifyTrack(FALAK_TAK, FALAK_TAK_START);
-        const drawer = document.getElementById('spotify-drawer');
-        spotifyDrawerOpen = true;
-        if (drawer) drawer.classList.add('open');
-      }, 800);
-
-      // Spotify embed sends a postMessage when a track finishes — chain to Hale Dil
-      let haleDilPlayed = false;
-      window.addEventListener('message', (e) => {
-        try {
-          const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-          // Spotify embed fires {type:'playback_update', data:{isPaused:true,position:0}} at track end
-          const isEnd = (
-            (data?.type === 'playback_update' && data?.data?.isPaused === true && data?.data?.position === 0) ||
-            (data?.event === 'ended') ||
-            (data?.type === 'track_ended')
-          );
-          if (isEnd && currentSpotifyTrackId === FALAK_TAK && !haleDilPlayed) {
-            haleDilPlayed = true;
-            const select = document.getElementById('spotify-select');
-            if (select) select.value = HALE_DIL;
-            currentSpotifyTrackId = HALE_DIL;
-            changeSpotifyTrack(HALE_DIL, HALE_DIL_START);
-          }
-        } catch (err) { /* ignore non-JSON messages */ }
-      });
+      // Music player init: just sets up the "Now Playing" label.
+      // Actual playback begins only after the user taps "Play Our Music ❤️"
+      const npTitle = document.getElementById('np-title');
+      if (npTitle) npTitle.textContent = PLAYLIST[0].title;
 
       // Auto-sync progress on interactions
       window.addEventListener('click', () => {

@@ -2071,6 +2071,7 @@
       <option value="0UYKuhzPMkvRQWO6luWBhI">Iktara (Male) — Wake Up Sid</option>
       <option value="2NECp5Tvb5Lm6TbJf0Y8xI">Mera Yaar — Bhaag Milkha Bhaag</option>
       <option value="6z5zRQHFEEBrvMkVjjCN8S">Yun Hi — Tanu Weds Manu</option>
+      <option value="2YXV0bNMpTjqCGFWjjLSbE">Nazm Nazm — Bareilly Ki Barfi</option>
     </select>
     <div class="sd-embed-container" id="spotify-embed-container">
       <div style="font-size:0.75rem;color:var(--muted)">Select a song to load player...</div>
@@ -3992,10 +3993,10 @@
 
       // -- REAL IKTARA AUDIO (starts at 1:10) --
       let collageMusicStopped = false;
-      const collageSongEl = new Audio("nazm-nazm.mp3");
-      collageSongEl.currentTime = 157;
+      const collageSongEl = new Audio("perfect_mp3.mp3");
+      collageSongEl.currentTime = 50;
       collageSongEl.addEventListener('loadedmetadata', () => {
-        collageSongEl.currentTime = 157;
+        collageSongEl.currentTime = 50;
       });
       collageSongEl.volume = 1.0;
       const collageSrcNode = musicCtx.createMediaElementSource(collageSongEl);
@@ -4511,9 +4512,9 @@
       // Auto-open Spotify drawer with Yun Hi
       setTimeout(() => {
         const select = document.getElementById('spotify-select');
-        if (select) select.value = '6z5zRQHFEEBrvMkVjjCN8S';
-        currentSpotifyTrackId = '6z5zRQHFEEBrvMkVjjCN8S';
-        changeSpotifyTrack('6z5zRQHFEEBrvMkVjjCN8S');
+        if (select) select.value = '2YXV0bNMpTjqCGFWjjLSbE';
+        currentSpotifyTrackId = '2YXV0bNMpTjqCGFWjjLSbE';
+        changeSpotifyTrack('2YXV0bNMpTjqCGFWjjLSbE');
         const drawer = document.getElementById('spotify-drawer');
         spotifyDrawerOpen = true;
         if (drawer) drawer.classList.add('open');

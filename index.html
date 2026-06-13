@@ -2135,12 +2135,13 @@
       <button class="sd-close" onclick="toggleSpotifyDrawer()">×</button>
     </div>
     <select class="sd-select" id="spotify-select" onchange="changeSpotifyTrack(this.value)">
+      <option value="0aCBMxHsOqipZCBVkMqGBQ">Falak Tak — Tum Ho Raazi</option>
+      <option value="3gVekNqKMbAMjzAcbXFkJC">Hale Dil — Murder 2</option>
       <option value="5Q58RkKyUafm15Syxg79DW">Sham — Aisha</option>
       <option value="5pPyvA03RKSJrAnnDcq0nh">Saibo — Shor in the City</option>
       <option value="0UYKuhzPMkvRQWO6luWBhI">Iktara (Male) — Wake Up Sid</option>
       <option value="2NECp5Tvb5Lm6TbJf0Y8xI">Mera Yaar — Bhaag Milkha Bhaag</option>
       <option value="6z5zRQHFEEBrvMkVjjCN8S">Yun Hi — Tanu Weds Manu</option>
-      <option value="2YXV0bNMpTjqCGFWjjLSbE">Nazm Nazm — Bareilly Ki Barfi</option>
     </select>
     <div class="sd-embed-container" id="spotify-embed-container">
       <div style="font-size:0.75rem;color:var(--muted)">Select a song to load player...</div>
@@ -2405,10 +2406,10 @@
                 <div class="gm-ticket-row">
                   <div class="gm-ticket-col">
                     <span class="gm-ticket-label">Restaurant / Venue 1</span>
-                    <span class="gm-ticket-val" id="gm-ticket-venue">Cozy Beachside Resort</span>
+                    <span class="gm-ticket-val" id="gm-ticket-venue">Hyte</span>
                   </div>
                 </div>
-                <div id="gm-ticket-venue2-row" class="gm-ticket-row" style="margin-top: 0.8rem; display:none;">
+                <div id="gm-ticket-venue2-row" class="gm-ticket-row" style="margin-top: 0.8rem;">
                   <div class="gm-ticket-col">
                     <span class="gm-ticket-label">Temple / Venue 2</span>
                     <span class="gm-ticket-val" id="gm-ticket-venue2"></span>
@@ -2642,14 +2643,14 @@
           image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1000"
         },
         date: {
-          title: "Our Next Adventure",
-          description: "A special invitation reserved just for the two of us, to celebrate properly.",
+          title: "Our Next Date",
+          description: "Since we're both going our separate ways for a while, I wanted us to have one beautiful day together — dinner at Hyte, and then blessings at Shiva Temple, because every new chapter deserves a little grace. 🌹🙏",
           ticketTitle: "AN EVENING FOR US",
           ticketDetails: "✨ Dinner, Drinks & Quality Time ✨",
           ticketValidation: "VALID FOREVER • FOR MY SWEETHEART",
           image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000",
-          venue: "Cozy Beachside Resort",
-          venue2: "",
+          venue: "Hyte",
+          venue2: "Shiva Temple",
           datePhoto1: "", datePhoto1Caption: "Our Restaurant 🍽️",
           datePhoto2: "", datePhoto2Caption: "Our Temple 🙏",
           datePhoto1LocalId: "", datePhoto2LocalId: "",
@@ -2677,7 +2678,7 @@
       }
     }
 
-    function changeSpotifyTrack(trackId) {
+    function changeSpotifyTrack(trackId, startAt) {
       currentSpotifyTrackId = trackId;
       const container = document.getElementById('spotify-embed-container');
       container.innerHTML = `
@@ -3008,12 +3009,12 @@
         desc.textContent = state.gifts.date.description;
         giftImgUrl = state.gifts.date.image;
 
-        document.getElementById('gm-ticket-venue').textContent = state.gifts.date.venue || "Cozy Beachside Resort";
+        document.getElementById('gm-ticket-venue').textContent = state.gifts.date.venue || "Hyte";
 
         const v2 = state.gifts.date.venue2 || '';
         const v2row = document.getElementById('gm-ticket-venue2-row');
-        if (v2row) v2row.style.display = v2 ? 'block' : 'none';
-        if (document.getElementById('gm-ticket-venue2')) document.getElementById('gm-ticket-venue2').textContent = v2;
+        if (v2row) v2row.style.display = 'block';
+        if (document.getElementById('gm-ticket-venue2')) document.getElementById('gm-ticket-venue2').textContent = v2 || "Shiva Temple";
 
         document.getElementById('gm-ticket-title').textContent = state.gifts.date.ticketTitle || "AN EVENING FOR US";
         document.getElementById('gm-ticket-details').textContent = state.gifts.date.ticketDetails || "✨ Dinner, Drinks & Quality Time ✨";
@@ -4204,9 +4205,10 @@
       if (preDecodedAudio) {
         collageAudioSource = musicCtx.createBufferSource();
         collageAudioSource.buffer = preDecodedAudio;
-        collageAudioSource.connect(audioDest);      // into the recording
-        collageAudioSource.connect(musicCtx.destination); // also to speakers so she hears it live
-        collageAudioSource.start(0, 100);           // start at 1 min 40 sec instantly
+        collageAudioSource.connect(audioDest);      // into the recording ONLY — silent during progress screen
+        // NOTE: deliberately NOT connecting to musicCtx.destination so user hears nothing during recording
+        // The audio is baked into the video and plays back when she watches it
+        collageAudioSource.start(0, 100);           // start at 1 min 40 sec
       }
 
       // Override stop to also kill music
@@ -4541,17 +4543,13 @@
         if (dp2cap) dp2cap.textContent = state.gifts.date.datePhoto2Caption || 'Our Temple 🙏';
         const venueEl = document.getElementById('yes-venue-text');
         if (venueEl) {
-          const v1 = state.gifts.date.venue || '';
+          const v1 = state.gifts.date.venue || 'To be announced';
           const v2 = state.gifts.date.venue2 || '';
-          let venueText = '';
-          if (v1 && v2) {
-            venueText = '📍 ' + v1 + ' → 🛕 ' + v2 + ' — our perfect day 🌹';
-          } else if (v1) {
-            venueText = '📍 ' + v1 + ' — our table is waiting 🌹';
-          } else if (v2) {
-            venueText = '🛕 ' + v2 + ' — a moment just for us 🌹';
+          if (v2) {
+            venueEl.textContent = '🍽️ ' + v1 + '  →  🛕 ' + v2;
+          } else {
+            venueEl.textContent = '📍 ' + v1 + ' — our table is waiting 🌹';
           }
-          venueEl.textContent = venueText;
         }
       }
     }
@@ -4764,16 +4762,43 @@
         setTimeout(() => spinner.remove(), 500);
       }
 
-      // Auto-open Spotify drawer with Yun Hi
+      // Auto-open Spotify drawer with Falak Tak; chain to Hale Dil when it ends
+      const FALAK_TAK = '0aCBMxHsOqipZCBVkMqGBQ';
+      const HALE_DIL  = '3gVekNqKMbAMjzAcbXFkJC';
+      // Most-replayed parts: Falak Tak ~2:10 (130s), Hale Dil ~1:45 (105s)
+      const FALAK_TAK_START = 130;
+      const HALE_DIL_START  = 105;
+
       setTimeout(() => {
         const select = document.getElementById('spotify-select');
-        if (select) select.value = '2YXV0bNMpTjqCGFWjjLSbE';
-        currentSpotifyTrackId = '2YXV0bNMpTjqCGFWjjLSbE';
-        changeSpotifyTrack('2YXV0bNMpTjqCGFWjjLSbE');
+        if (select) select.value = FALAK_TAK;
+        currentSpotifyTrackId = FALAK_TAK;
+        changeSpotifyTrack(FALAK_TAK, FALAK_TAK_START);
         const drawer = document.getElementById('spotify-drawer');
         spotifyDrawerOpen = true;
         if (drawer) drawer.classList.add('open');
       }, 800);
+
+      // Spotify embed sends a postMessage when a track finishes — chain to Hale Dil
+      let haleDilPlayed = false;
+      window.addEventListener('message', (e) => {
+        try {
+          const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+          // Spotify embed fires {type:'playback_update', data:{isPaused:true,position:0}} at track end
+          const isEnd = (
+            (data?.type === 'playback_update' && data?.data?.isPaused === true && data?.data?.position === 0) ||
+            (data?.event === 'ended') ||
+            (data?.type === 'track_ended')
+          );
+          if (isEnd && currentSpotifyTrackId === FALAK_TAK && !haleDilPlayed) {
+            haleDilPlayed = true;
+            const select = document.getElementById('spotify-select');
+            if (select) select.value = HALE_DIL;
+            currentSpotifyTrackId = HALE_DIL;
+            changeSpotifyTrack(HALE_DIL, HALE_DIL_START);
+          }
+        } catch (err) { /* ignore non-JSON messages */ }
+      });
 
       // Auto-sync progress on interactions
       window.addEventListener('click', () => {

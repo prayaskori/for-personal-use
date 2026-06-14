@@ -2042,6 +2042,11 @@
         <div class="fg"><label>Letter Paragraph 2</label><textarea id="inp-lp2" rows="3"></textarea></div>
         <div class="fg"><label>Letter Signoff</label><input id="inp-lsignoff" type="text"></div>
         <div class="fg"><label>Your Name</label><input id="inp-pname" type="text"></div>
+        <hr class="c-divider">
+        <p class="c-section-label">💌 Proposal Letter (shown after she says Yes)</p>
+        <p class="c-hint">This is a separate private letter revealed only inside the proposal — she sees it after clicking Yes.</p>
+        <div class="fg"><label>Proposal Letter Paragraph 1</label><textarea id="inp-yes-lp1" rows="4"></textarea></div>
+        <div class="fg"><label>Proposal Letter Paragraph 2</label><textarea id="inp-yes-lp2" rows="3"></textarea></div>
       </div>
 
       <!-- TAB 1: BALLOONS -->
@@ -2131,6 +2136,7 @@
         <div class="fg"><label>Description</label><textarea id="inp-g3d" rows="2"></textarea></div>
         <div class="fg"><label>Restaurant / Venue 1 Name</label><input id="inp-g3ven" type="text"></div>
         <div class="fg"><label>Temple / Venue 2 Name</label><input id="inp-g3ven2" type="text"></div>
+        <div class="fg"><label>Message shown after she says Yes 💕</label><textarea id="inp-yes-date-note" rows="2" placeholder="Every detail planned, just thinking of your smile 🌸"></textarea></div>
         <div class="fg" style="margin-bottom: 0.8rem;">
           <label>Venue Image</label>
           <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
@@ -2681,7 +2687,7 @@
       <div id="yes-step-3" style="display:none; text-align:center; margin-top:0.5rem;">
         <div style="font-size:2rem; margin-bottom:0.5rem;">🌹</div>
         <h3 style="font-family:'Playfair Display',Georgia,serif; font-size:1.6rem; color:#ffe082; margin-bottom:0.5rem;">This is really happening, Shreya...</h3>
-        <p style="font-size:0.95rem; color:#fce4ec; margin-bottom:1.2rem; font-style:italic;">Every detail planned, just thinking of your smile 🌸</p>
+        <p id="yes-date-note" style="font-size:0.95rem; color:#fce4ec; margin-bottom:1.2rem; font-style:italic;">Every detail planned, just thinking of your smile 🌸</p>
         <div id="yes-date-photos" style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:1.2rem;">
           <div style="text-align:center;">
             <img id="yes-dp1" src="" style="width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:0.4rem;border:2px solid rgba(255,255,255,0.15);">
@@ -2724,6 +2730,9 @@
       letterP2: "You deserve the absolute world, and I promise to listen closer, support you deeper, and love you better every day. Thank you for being my light and my home.",
       letterSignoff: "Forever Yours,",
       partnerName: "Prayas",
+      yesDateNote: "Every detail planned, just thinking of your smile 🌸",
+      yesLetterP1: "Happy 1st Anniversary! Today is a celebration of us, but I also want to take this moment to say I'm truly sorry for the mistakes I've made. Sometimes I take your gentle patience for granted, and I regret any time I've brought a shadow to your face.",
+      yesLetterP2: "You deserve the absolute world, and I promise to listen closer, support you deeper, and love you better every day. Thank you for being my light and my home.",
       balloonMessages: [
         "I love the way your eyes sparkle when you are genuinely happy. ✨",
         "Happy Anniversary! You are the absolute best thing that ever happened to me. 💖",
@@ -3405,6 +3414,8 @@
       document.getElementById('ticket-title').textContent = state.gifts.date.ticketTitle;
       document.getElementById('ticket-sub').textContent = state.gifts.date.ticketDetails;
       document.getElementById('ticket-val').textContent = state.gifts.date.ticketValidation;
+      const yesDateNoteEl = document.getElementById('yes-date-note');
+      if (yesDateNoteEl) yesDateNoteEl.textContent = state.yesDateNote || 'Every detail planned, just thinking of your smile 🌸';
     }
 
     // ═══════════════════════════════════════════════════
@@ -3426,6 +3437,8 @@
       document.getElementById('inp-lp2').value = state.letterP2;
       document.getElementById('inp-lsignoff').value = state.letterSignoff;
       document.getElementById('inp-pname').value = state.partnerName;
+      if (document.getElementById('inp-yes-lp1')) document.getElementById('inp-yes-lp1').value = state.yesLetterP1 || '';
+      if (document.getElementById('inp-yes-lp2')) document.getElementById('inp-yes-lp2').value = state.yesLetterP2 || '';
       document.getElementById('inp-g1t').value = state.gifts.flowers.title;
       document.getElementById('inp-g1d').value = state.gifts.flowers.description;
       document.getElementById('inp-g2t').value = state.gifts.earrings.title;
@@ -3434,6 +3447,7 @@
       document.getElementById('inp-g3d').value = state.gifts.date.description;
       document.getElementById('inp-g3ven').value = state.gifts.date.venue || '';
       if (document.getElementById('inp-g3ven2')) document.getElementById('inp-g3ven2').value = state.gifts.date.venue2 || '';
+      if (document.getElementById('inp-yes-date-note')) document.getElementById('inp-yes-date-note').value = state.yesDateNote || '';
       document.getElementById('inp-tkt').value = state.gifts.date.ticketTitle;
       document.getElementById('inp-tks').value = state.gifts.date.ticketDetails;
       if (document.getElementById('inp-tkv')) document.getElementById('inp-tkv').value = state.gifts.date.ticketValidation || '';
@@ -3627,6 +3641,8 @@
       state.letterP2 = document.getElementById('inp-lp2').value;
       state.letterSignoff = document.getElementById('inp-lsignoff').value;
       state.partnerName = document.getElementById('inp-pname').value;
+      if (document.getElementById('inp-yes-lp1')) state.yesLetterP1 = document.getElementById('inp-yes-lp1').value;
+      if (document.getElementById('inp-yes-lp2')) state.yesLetterP2 = document.getElementById('inp-yes-lp2').value;
       state.gifts.flowers.title = document.getElementById('inp-g1t').value;
       state.gifts.flowers.description = document.getElementById('inp-g1d').value;
       state.gifts.earrings.title = document.getElementById('inp-g2t').value;
@@ -3635,6 +3651,7 @@
       state.gifts.date.description = document.getElementById('inp-g3d').value;
       state.gifts.date.venue = document.getElementById('inp-g3ven').value;
       if (document.getElementById('inp-g3ven2')) state.gifts.date.venue2 = document.getElementById('inp-g3ven2').value;
+      if (document.getElementById('inp-yes-date-note')) state.yesDateNote = document.getElementById('inp-yes-date-note').value;
       state.gifts.date.ticketTitle = document.getElementById('inp-tkt').value;
       state.gifts.date.ticketDetails = document.getElementById('inp-tks').value;
       if (document.getElementById('inp-dp1cap')) state.gifts.date.datePhoto1Caption = document.getElementById('inp-dp1cap').value;
@@ -4854,7 +4871,7 @@
       if (n === 2) {
         // Populate letter
         const letterEl = document.getElementById('yes-letter-body');
-        if (letterEl) letterEl.textContent = (state.letterP1 || '') + (state.letterP2 ? '\n\n' + state.letterP2 : '');
+        if (letterEl) letterEl.textContent = (state.yesLetterP1 || '') + (state.yesLetterP2 ? '\n\n' + state.yesLetterP2 : '');
       }
       if (n === 3) {
         // Populate date reveal photos

@@ -2741,22 +2741,27 @@
         "You are my sweet girl, my best friend, and my greatest adventure. Happy 1 Year! 🌹"
       ],
       galleryItems: [
-        { type: 'image', url: 'https://picsum.photos/id/83/600/800', caption: 'Where it all began... 🌸', timestamp: 'January 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/240/600/800', caption: 'Laughing at nothing 💫', timestamp: 'February 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/338/600/400', caption: 'Our cozy winter getaway ❄️', timestamp: 'March 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/367/600/800', caption: 'The brightest smile! 💖', timestamp: 'April 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/64/600/600', caption: 'Adventures together 🌿', timestamp: 'May 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/225/600/400', caption: 'Sunset vibes 🌅', timestamp: 'June 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/399/600/800', caption: 'My favourite person 💕', timestamp: 'July 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/453/600/600', caption: 'Making memories 🎀', timestamp: 'August 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/325/600/400', caption: 'You and me 🌹', timestamp: 'September 2024' },
-        { type: 'image', url: 'https://picsum.photos/id/431/600/800', caption: 'Forever grateful for you ✨', timestamp: 'October 2024' }
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'image', url: '', caption: '', timestamp: '' }
       ],
       gifts: {
         flowers: {
           title: "A Bouquet of Sweetness",
           description: "A beautiful arrangement of your favourite flowers (roses and pink peonies) to show how much you brighten my days.",
-          image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000"
+          image: ""
         },
         earrings: {
           title: "Your Photo Collage",
@@ -3209,7 +3214,10 @@
     function getYtId(url) {
       if (!url) return null;
       const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-      return m ? m[1] : null;
+      if (m) return m[1];
+      // Handle bare video ID stored after parsing
+      if (/^[a-zA-Z0-9_-]{11}$/.test(url.trim())) return url.trim();
+      return null;
     }
 
     function renderGallery() {
@@ -3507,19 +3515,9 @@
       <button class="c-remove" onclick="removeGalleryItem(${i})">×</button>
       <div style="font-size:.72rem;font-weight:700;color:var(--rose-dk);margin-bottom:.6rem;padding-right:1.5rem">${tl}</div>
       <div class="fg" style="margin-bottom:0.5rem;">
-        <label>🔗 Paste Image / YouTube URL <span style="font-weight:400;color:var(--muted)">(recommended)</span></label>
+        <label>🔗 Paste Image / YouTube URL</label>
         <input type="text" class="g-url" data-i="${i}" placeholder="https://i.imgur.com/abc.jpg  or  YouTube link" value="${displayUrl}">
-        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem;">Upload photo to <strong>imgbb.com</strong> or <strong>imgur.com</strong> → paste direct link here. Works for all 10 photos!</div>
-      </div>
-      <div class="fg" style="margin-bottom:0.8rem;">
-        <label>📁 Or Upload from Device <span style="font-weight:400;color:var(--muted)">(may break with many photos)</span></label>
-        <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
-          ${previewHtml}
-          <button type="button" class="gift-view-btn" style="margin-top:0; padding:0.35rem 0.8rem; font-size:0.75rem;" onclick="document.getElementById('slot-file-input-${i}').click()">
-            ${item.url ? 'Change File 🔄' : 'Upload File 📸'}
-          </button>
-          <input type="file" id="slot-file-input-${i}" style="display:none;" accept="image/*,video/*" onchange="handleSlotUpload(${i}, this.files)">
-        </div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem;">Upload photo to <strong>imgbb.com</strong> or <strong>imgur.com</strong> → paste direct link here.</div>
       </div>
       <div class="fg"><label>Caption</label><input type="text" class="g-cap" data-i="${i}" value="${item.caption || ''}"></div>
       <div class="fg" style="margin-bottom:0"><label>Timestamp (e.g. "January 2024")</label><input type="text" class="g-ts" data-i="${i}" value="${item.timestamp || ''}"></div>`;
@@ -3615,10 +3613,6 @@
 
 
     function addGalleryItem(type) {
-      const hasPlaceholders = state.galleryItems.some(item => item.url && item.url.startsWith('https://picsum.photos/'));
-      if (hasPlaceholders) {
-        state.galleryItems = [];
-      }
       state.galleryItems.push({ type, url: '', caption: '', timestamp: '' });
       renderGalleryInputs();
     }

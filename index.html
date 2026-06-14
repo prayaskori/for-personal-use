@@ -3220,6 +3220,24 @@
       return null;
     }
 
+    function processGalleryUrl(i, urlVal) {
+      urlVal = urlVal.trim();
+      if (!urlVal) return;
+      const ytMatch = urlVal.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+      if (ytMatch) {
+        state.galleryItems[i].type = 'youtube';
+        state.galleryItems[i].url = ytMatch[1];
+        state.galleryItems[i].cdnUrl = urlVal;
+        state.galleryItems[i].localId = '';
+      } else {
+        state.galleryItems[i].type = 'image';
+        state.galleryItems[i].url = urlVal;
+        state.galleryItems[i].cdnUrl = urlVal;
+        state.galleryItems[i].localId = '';
+      }
+      renderGallery();
+    }
+
     function renderGallery() {
       const grid = document.getElementById('gallery-grid');
       grid.innerHTML = '';
@@ -3516,7 +3534,7 @@
       <div style="font-size:.72rem;font-weight:700;color:var(--rose-dk);margin-bottom:.6rem;padding-right:1.5rem">${tl}</div>
       <div class="fg" style="margin-bottom:0.5rem;">
         <label>🔗 Paste Image / YouTube URL</label>
-        <input type="text" class="g-url" data-i="${i}" placeholder="https://i.imgur.com/abc.jpg  or  YouTube link" value="${displayUrl}">
+        <input type="text" class="g-url" data-i="${i}" placeholder="https://i.imgur.com/abc.jpg  or  YouTube link" value="${displayUrl}" onchange="processGalleryUrl(${i}, this.value)" onpaste="setTimeout(()=>processGalleryUrl(${i}, this.value), 100)">
         <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem;">Upload photo to <strong>imgbb.com</strong> or <strong>imgur.com</strong> → paste direct link here.</div>
       </div>
       <div class="fg"><label>Caption</label><input type="text" class="g-cap" data-i="${i}" value="${item.caption || ''}"></div>

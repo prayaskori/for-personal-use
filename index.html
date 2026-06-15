@@ -2798,8 +2798,8 @@
           image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000",
           venue: "Hyte",
           venue2: "Shiva Temple",
-          datePhoto1: "", datePhoto1Caption: "Our Restaurant 🍽️",
-          datePhoto2: "", datePhoto2Caption: "Our Temple 🙏",
+          datePhoto1: "/Hytte.jpg", datePhoto1Caption: "Our Restaurant 🍽️",
+          datePhoto2: "/temple.jpg", datePhoto2Caption: "Our Temple 🙏",
           datePhoto1LocalId: "", datePhoto2LocalId: "",
           datePhoto1CdnUrl: "", datePhoto2CdnUrl: ""
         }
@@ -3336,6 +3336,10 @@
       // Reset portrait mode
       if (imgCont) imgCont.classList.remove('collage-portrait');
       if (modalContent) modalContent.classList.remove('wide-portrait');
+
+      // Reset date photos section (only shown for gift 3 below)
+      const datePhotoContReset = document.getElementById('gm-date-photos');
+      if (datePhotoContReset) datePhotoContReset.style.display = 'none';
 
       let giftImgUrl = '';
       if (n === 1) {

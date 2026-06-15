@@ -2770,7 +2770,13 @@
         { type: 'image', url: '', caption: '', timestamp: '' },
         { type: 'image', url: '', caption: '', timestamp: '' },
         { type: 'image', url: '', caption: '', timestamp: '' },
-        { type: 'image', url: '', caption: '', timestamp: '' }
+        { type: 'image', url: '', caption: '', timestamp: '' },
+        { type: 'video', url: '/april%20date.mp4', cdnUrl: '/april%20date.mp4', caption: 'April Date', timestamp: '' },
+        { type: 'video', url: '/august%20date2.mp4', cdnUrl: '/august%20date2.mp4', caption: 'August Date', timestamp: '' },
+        { type: 'video', url: '/septemebr%20date%20duusehra.mp4', cdnUrl: '/septemebr%20date%20duusehra.mp4', caption: 'September Date — Dussehra', timestamp: '' },
+        { type: 'video', url: '/october%20date3.mp4', cdnUrl: '/october%20date3.mp4', caption: 'October Date', timestamp: '' },
+        { type: 'video', url: '/december%20date.mp4', cdnUrl: '/december%20date.mp4', caption: 'December Date', timestamp: '' },
+        { type: 'video', url: '/july%20video.mp4', cdnUrl: '/july%20video.mp4', caption: 'Birthday', timestamp: '' }
       ],
       gifts: {
         flowers: {
@@ -3530,7 +3536,8 @@
       state.galleryItems.forEach((item, i) => {
         const d = document.createElement('div'); d.className = 'c-item';
         const isLocal = item.url && item.url.startsWith('blob:');
-        const tl = item.type === 'youtube' ? '🎬 YouTube' : item.type === 'video' ? (isLocal ? '🎥 Local Video' : '🎥 Video') : (isLocal ? '🖼️ Local Photo' : '🖼️ Photo');
+        const isPresetVideo = item.type === 'video' && item.url && item.url.startsWith('/') && !item.url.startsWith('blob:');
+        const tl = item.type === 'youtube' ? '🎬 YouTube' : item.type === 'video' ? (isPresetVideo ? '📌 Memory Video' : isLocal ? '🎥 Local Video' : '🎥 Video') : (isLocal ? '🖼️ Local Photo' : '🖼️ Photo');
 
         let previewHtml = '';
         if (item.url) {
@@ -3543,14 +3550,17 @@
           previewHtml = `<div style="width:50px; height:50px; border-radius:6px; background:#f5ead8; border:1px dashed var(--gold); display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:0.5rem;">❓</div>`;
         }
 
-        const displayUrl = item.cdnUrl && item.cdnUrl.startsWith('http') ? item.cdnUrl : (!item.localId && item.url && !item.url.startsWith('blob:') ? item.url : '');
+        const displayUrl = isPresetVideo ? '' : (item.cdnUrl && item.cdnUrl.startsWith('http') ? item.cdnUrl : (!item.localId && item.url && !item.url.startsWith('blob:') ? item.url : ''));
+        const urlFieldHtml = isPresetVideo
+          ? `<label>🔗 Source</label><input type="text" class="g-url-locked" data-i="${i}" value="${item.url}" disabled style="opacity:0.6;">`
+          : `<label>🔗 Paste Image / YouTube URL</label>
+        <input type="text" class="g-url" data-i="${i}" placeholder="https://i.imgur.com/abc.jpg  or  YouTube link" value="${displayUrl}" onchange="processGalleryUrl(${i}, this.value)" onpaste="setTimeout(()=>processGalleryUrl(${i}, this.value), 100)">
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem;">Upload photo to <strong>imgbb.com</strong> or <strong>imgur.com</strong> → paste direct link here.</div>`;
         d.innerHTML = `
       <button class="c-remove" onclick="removeGalleryItem(${i})">×</button>
       <div style="font-size:.72rem;font-weight:700;color:var(--rose-dk);margin-bottom:.6rem;padding-right:1.5rem">${tl}</div>
       <div class="fg" style="margin-bottom:0.5rem;">
-        <label>🔗 Paste Image / YouTube URL</label>
-        <input type="text" class="g-url" data-i="${i}" placeholder="https://i.imgur.com/abc.jpg  or  YouTube link" value="${displayUrl}" onchange="processGalleryUrl(${i}, this.value)" onpaste="setTimeout(()=>processGalleryUrl(${i}, this.value), 100)">
-        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem;">Upload photo to <strong>imgbb.com</strong> or <strong>imgur.com</strong> → paste direct link here.</div>
+        ${urlFieldHtml}
       </div>
       <div class="fg"><label>Caption</label><input type="text" class="g-cap" data-i="${i}" value="${item.caption || ''}"></div>
       <div class="fg" style="margin-bottom:0"><label>Timestamp (e.g. "January 2024")</label><input type="text" class="g-ts" data-i="${i}" value="${item.timestamp || ''}"></div>`;

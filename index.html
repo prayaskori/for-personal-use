@@ -4522,6 +4522,29 @@
       ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
     }
 
+    // Draws the full media (no cropping) centered within the canvas, scaled to fit.
+    // Used for portrait/odd-aspect media so faces/content never get cut off.
+    function drawImageContain(ctx, img, x, y, w, h, bgColor) {
+      let iw = img.width || img.videoWidth;
+      let ih = img.height || img.videoHeight;
+      if (!iw || !ih) return;
+
+      if (bgColor) {
+        ctx.save();
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(x, y, w, h);
+        ctx.restore();
+      }
+
+      const r = Math.min(w / iw, h / ih);
+      const nw = iw * r;
+      const nh = ih * r;
+      const nx = x + (w - nw) / 2;
+      const ny = y + (h - nh) / 2;
+
+      ctx.drawImage(img, 0, 0, iw, ih, nx, ny, nw, nh);
+    }
+
     function preloadMedia(item) {
       return new Promise((resolve) => {
         if (item.type === 'video' || (item.url.startsWith('blob:') && item.type === 'video')) {
@@ -4893,6 +4916,11 @@
 
       function drawMediaSlide(slide, scale) {
         const media = slide.media;
+        const el = media.element;
+        const iw = el.videoWidth || el.width || 0;
+        const ih = el.videoHeight || el.height || 0;
+        const isPortrait = iw && ih && (iw / ih) < (1280 / 720);
+
         if (media.type === 'video') {
           const video = media.element;
           if (!media.started) {
@@ -4902,9 +4930,17 @@
           } else if (video.paused && !video.ended) {
             video.play().catch(e => console.log(e));
           }
-          drawImageProp(collageCtx, video, 0, 0, 1280, 720, 0.5, 0.5, scale);
+          if (isPortrait) {
+            drawImageContain(collageCtx, video, 0, 0, 1280, 720, '#1e1012');
+          } else {
+            drawImageProp(collageCtx, video, 0, 0, 1280, 720, 0.5, 0.5, scale);
+          }
         } else {
-          drawImageProp(collageCtx, media.element, 0, 0, 1280, 720, 0.5, 0.5, scale);
+          if (isPortrait) {
+            drawImageContain(collageCtx, media.element, 0, 0, 1280, 720, '#1e1012');
+          } else {
+            drawImageProp(collageCtx, media.element, 0, 0, 1280, 720, 0.5, 0.5, scale);
+          }
         }
       }
 

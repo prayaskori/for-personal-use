@@ -4844,13 +4844,12 @@
           const slideElapsed = elapsed - slide.startTime;
           const slideProgress = slideElapsed / slide.duration;
 
-          const zoom = 1.0 + 0.08 * slideProgress;
+          const zoom = 1.0;
 
           const timeToNext = slide.endTime - elapsed;
           if (timeToNext < TRANSITION_DURATION && currentSlideIdx < slides.length - 1) {
             const nextSlide = slides[currentSlideIdx + 1];
-            const nextSlideProgress = (elapsed - nextSlide.startTime) / nextSlide.duration;
-            const nextZoom = 1.0 + 0.08 * nextSlideProgress;
+            const nextZoom = 1.0;
 
             const alpha = (TRANSITION_DURATION - timeToNext) / TRANSITION_DURATION;
 
